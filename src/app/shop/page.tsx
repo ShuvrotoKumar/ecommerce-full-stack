@@ -31,17 +31,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-
-const mockProducts = [
-  { id: '1', name: 'Premium Wireless Headphones', price: 299, oldPrice: 350, rating: 4.8, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400&h=400&fit=crop', category: 'Electronics', isNew: true },
-  { id: '2', name: 'Minimalist Leather Watch', price: 150, rating: 4.5, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400&h=400&fit=crop', category: 'Accessories', discount: 15 },
-  { id: '3', name: 'Smart Fitness Tracker', price: 89, oldPrice: 120, rating: 4.7, image: 'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?q=80&w=400&h=400&fit=crop', category: 'Electronics' },
-  { id: '4', name: 'Classic Cotton T-Shirt', price: 25, rating: 4.9, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&h=400&fit=crop', category: 'Fashion' },
-  { id: '5', name: 'Leather Crossbody Bag', price: 120, rating: 4.6, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=400&h=400&fit=crop', category: 'Fashion' },
-  { id: '6', name: 'Wireless Charging Pad', price: 45, rating: 4.4, image: 'https://images.unsplash.com/photo-1586816829380-49275086d997?q=80&w=400&h=400&fit=crop', category: 'Electronics' },
-  { id: '7', name: 'Noise Cancelling Earbuds', price: 179, rating: 4.7, image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=400&h=400&fit=crop', category: 'Electronics', isNew: true },
-  { id: '8', name: 'Casual Canvas Sneakers', price: 65, rating: 4.3, image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=400&h=400&fit=crop', category: 'Fashion', discount: 20 },
-];
+import { useGetProductsQuery } from '@/services/productApi';
 
 const categories = ['All', 'Electronics', 'Fashion', 'Home & Living', 'Accessories'];
 const brands = ['Apple', 'Sony', 'Nike', 'Adidas', 'Samsung'];
@@ -51,19 +41,33 @@ export default function ShopPage() {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
+  const [search, setSearch] = useState('');
+  
+  const { data: products = [], isLoading } = useGetProductsQuery({
+    category: selectedCategory !== 'All' ? selectedCategory : undefined,
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
+    search: search || undefined,
+    sortBy,
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Shop All Products</h1>
-          <p className="text-muted-foreground">Showing 1-12 of 120 products</p>
-        </div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Shop All Products</h1>
+            <p className="text-muted-foreground">Showing {products.length} products</p>
+          </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <div className="relative flex-grow md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search products..." className="pl-9 rounded-full" />
+            <Input 
+              placeholder="Search products..." 
+              className="pl-9 rounded-full" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
           <Sheet>
             <SheetTrigger
@@ -152,11 +156,19 @@ export default function ShopPage() {
           </div>
 
           {/* Grid */}
-          <div className={view === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
-            {mockProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className="h-64 bg-muted rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className={view === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           <div className="mt-12 flex justify-center">

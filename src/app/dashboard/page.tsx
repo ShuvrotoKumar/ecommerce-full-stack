@@ -14,26 +14,50 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-const stats = [
-  { label: 'Total Orders', value: '12', icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { label: 'Wishlist Items', value: '8', icon: Heart, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-  { label: 'Pending Reviews', value: '3', icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-  { label: 'Total Spent', value: '$1,240', icon: Clock, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-];
-
-const recentOrders = [
-  { id: 'SW-12345', date: 'May 05, 2026', status: 'Delivered', total: 299, items: 1 },
-  { id: 'SW-12344', date: 'Apr 28, 2026', status: 'Processing', total: 150, items: 2 },
-  { id: 'SW-12343', date: 'Apr 15, 2026', status: 'Shipped', total: 85, items: 1 },
-];
+import { useGetProfileQuery, useGetAddressesQuery } from '@/services/userApi';
+import { useGetMyOrdersQuery } from '@/services/orderApi';
+import { useGetWishlistQuery } from '@/services/wishlistApi';
 
 export default function DashboardPage() {
+  const { data: profile } = useGetProfileQuery();
+  const { data: orders = [] } = useGetMyOrdersQuery();
+  const { data: wishlist = [] } = useGetWishlistQuery();
+  const { data: addresses = [] } = useGetAddressesQuery();
+
+  const firstName = profile?.name?.split(' ')[0] || 'User';
+  const totalSpent = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const recentOrders = orders.slice(0, 3);
+  const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0];
+
+  const stats = [
+    { label: 'Total Orders', value: orders.length.toString(), icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: 'Wishlist Items', value: wishlist.length.toString(), icon: Heart, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { label: 'Pending Reviews', value: '0', icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+    { label: 'Total Spent', value: `$${totalSpent.toFixed(2)}`, icon: Clock, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  ];
+
+  const getStatusVariant = (status) => {
+    if (status === 'Delivered') return 'default';
+    if (status === 'Processing') return 'secondary';
+    return 'outline';
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 'Delivered') return 'bg-emerald-500 hover:bg-emerald-600 border-none';
+    return '';
+  };
+
+  const getProgressWidth = (status) => {
+    if (status === 'Shipped') return '75%';
+    if (status === 'Processing') return '25%';
+    return '100%';
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, John!</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {firstName}!</h1>
           <p className="text-muted-foreground">Here's what's happening with your account today.</p>
         </div>
         <Button variant="outline" size="icon" className="rounded-full">
@@ -71,7 +95,7 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-4">
             {recentOrders.map((order) => (
-              <Card key={order.id} className="border-none shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+              <Card key={order._id} className="border-none shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
                 <CardContent className="p-0">
                   <div className="flex items-center p-4 gap-4">
                     <div className="p-3 bg-muted rounded-xl group-hover:bg-primary/10 transition-colors">
@@ -80,12 +104,14 @@ export default function DashboardPage() {
                     <div className="flex-grow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-bold">Order {order.id}</p>
-                          <p className="text-xs text-muted-foreground">{order.date} • {order.items} items</p>
+                          <p className="font-bold">Order #{order._id?.slice(-5)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(order.createdAt).toLocaleDateString()} • {order.items?.length || 0} items
+                          </p>
                         </div>
                         <Badge 
-                          variant={order.status === 'Delivered' ? 'default' : order.status === 'Processing' ? 'secondary' : 'outline'}
-                          className={order.status === 'Delivered' ? 'bg-emerald-500 hover:bg-emerald-600 border-none' : ''}
+                          variant={getStatusVariant(order.status)}
+                          className={getStatusColor(order.status)}
                         >
                           {order.status}
                         </Badge>
@@ -99,7 +125,7 @@ export default function DashboardPage() {
                   {/* Mini Progress Bar for non-delivered orders */}
                   {order.status !== 'Delivered' && (
                     <div className="h-1 bg-muted w-full">
-                      <div className="h-full bg-primary" style={{ width: order.status === 'Shipped' ? '75%' : '25%' }} />
+                      <div className="h-full bg-primary" style={{ width: getProgressWidth(order.status) }} />
                     </div>
                   )}
                 </CardContent>
@@ -128,17 +154,21 @@ export default function DashboardPage() {
               <CardTitle className="text-lg">Current Address</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-muted rounded-lg">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
+              {defaultAddress ? (
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-muted rounded-lg">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">{defaultAddress.isDefault ? 'Home (Default)' : 'Address'}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {defaultAddress.street}, {defaultAddress.city}, {defaultAddress.state} {defaultAddress.zipCode}, {defaultAddress.country}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-bold">Home (Default)</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    123 Commerce Street, Digital City, 10101, United States
-                  </p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No address added yet.</p>
+              )}
               <Button variant="outline" className="w-full">Manage Addresses</Button>
             </CardContent>
           </Card>

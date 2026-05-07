@@ -7,25 +7,47 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { removeFromCart, updateQuantity } from '@/features/cart/cartSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { useGetCartQuery, useAddToCartMutation, useRemoveFromCartMutation, useClearCartMutation } from '@/services/cartApi';
 
 export default function CartPage() {
-  const { items, totalAmount, totalQuantity } = useSelector((state: RootState) => state.cart);
-  const dispatch = useDispatch();
+  const { data: cart, isLoading } = useGetCartQuery();
+  const [addToCart] = useAddToCartMutation();
+  const [removeFromCart] = useRemoveFromCartMutation();
+  const [clearCart] = useClearCartMutation();
+  
+  const items = cart?.items || [];
+  const totalAmount = cart?.totalAmount || 0;
+  const totalQuantity = cart?.totalQuantity || 0;
 
-  const handleUpdateQuantity = (id: string, newQuantity: number) => {
+  const handleUpdateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    dispatch(updateQuantity({ id, quantity: newQuantity }));
+    addToCart({ productId, quantity: newQuantity });
   };
 
-  const handleRemoveItem = (id: string, name: string) => {
-    dispatch(removeFromCart(id));
+  const handleRemoveItem = (productId: string, name: string) => {
+    removeFromCart(productId);
     toast.error(`${name} removed from cart`);
   };
+
+  const handleClearCart = () => {
+    clearCart();
+    toast.success('Cart cleared');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center">
+        <div className="flex flex-col items-center max-w-md mx-auto space-y-6">
+          <div className="p-6 bg-muted rounded-full animate-pulse">
+            <ShoppingBag className="h-16 w-16 text-muted-foreground" />
+          </div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -39,8 +61,8 @@ export default function CartPage() {
             Looks like you haven&apos;t added anything to your cart yet. 
             Explore our shop to find the best deals!
           </p>
-          <Button render={<Link href="/shop" />} size="lg" className="rounded-full px-8">
-            Start Shopping
+          <Button asChild size="lg" className="rounded-full px-8">
+            <Link href="/shop">Start Shopping</Link>
           </Button>
         </div>
       </div>
@@ -55,67 +77,64 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-6">
           <AnimatePresence>
-            {items.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col sm:flex-row gap-6 p-4 bg-card border rounded-2xl"
-              >
-                <div className="w-full sm:w-32 h-32 shrink-0 bg-muted rounded-xl overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-grow flex flex-col justify-between py-1">
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <h3 className="font-bold text-lg hover:text-primary transition-colors">
-                        <Link href={`/product/${item.id}`}>{item.name}</Link>
-                      </h3>
-                      {item.variant && (
-                        <p className="text-sm text-muted-foreground mt-1">Variant: {item.variant}</p>
-                      )}
-                    </div>
-                    <p className="font-bold text-lg">${item.price}</p>
+              {items.map((item) => (
+                <motion.div
+                  key={item.productId || item._id}
+                  layout
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="flex flex-col sm:flex-row gap-6 p-4 bg-card border rounded-2xl"
+                >
+                  <div className="w-full sm:w-32 h-32 shrink-0 bg-muted rounded-xl overflow-hidden">
+                    <img
+                      src={item.product?.images?.[0]?.url || item.image}
+                      alt={item.product?.name || item.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="flex items-center border rounded-lg overflow-hidden h-10 bg-muted/50">
+                  <div className="flex-grow flex flex-col justify-between py-1">
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <h3 className="font-bold text-lg hover:text-primary transition-colors">
+                          <Link href={`/product/${item.productId || item._id}`}>{item.product?.name || item.name}</Link>
+                        </h3>
+                      </div>
+                      <p className="font-bold text-lg">${item.product?.price || item.price}</p>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="flex items-center border rounded-lg overflow-hidden h-10 bg-muted/50">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-full rounded-none hover:bg-muted"
+                          onClick={() => handleUpdateQuantity(item.productId || item._id, item.quantity - 1)}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-12 text-center font-medium">{item.quantity}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-full rounded-none hover:bg-muted"
+                          onClick={() => handleUpdateQuantity(item.productId || item._id, item.quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-full rounded-none hover:bg-muted"
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                        onClick={() => handleRemoveItem(item.productId || item._id, item.product?.name || item.name)}
                       >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-12 text-center font-medium">{item.quantity}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-full rounded-none hover:bg-muted"
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                      >
-                        <Plus className="h-3 w-3" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive transition-colors"
-                      onClick={() => handleRemoveItem(item.id, item.name)}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
           </AnimatePresence>
 
           {/* Shipping Info Card */}
@@ -151,25 +170,25 @@ export default function CartPage() {
             <CardContent className="p-6 space-y-6">
               <h2 className="text-xl font-bold">Order Summary</h2>
               
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>${totalAmount.toFixed(2)}</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${typeof totalAmount === 'number' ? totalAmount.toFixed(2) : totalAmount || '0.00'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span className="text-emerald-500 font-medium">Free</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>$0.00</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">${typeof totalAmount === 'number' ? totalAmount.toFixed(2) : totalAmount || '0.00'}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="text-emerald-500 font-medium">Free</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>$0.00</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-primary">${totalAmount.toFixed(2)}</span>
-                </div>
-              </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">

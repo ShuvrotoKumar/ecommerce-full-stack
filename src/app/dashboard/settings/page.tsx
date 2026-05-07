@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   User, 
   Lock, 
@@ -9,7 +9,9 @@ import {
   Globe, 
   CreditCard,
   ChevronRight,
-  Save
+  Save,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,11 +20,57 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { useGetProfileQuery, useUpdateProfileMutation, useChangePasswordMutation } from '@/services/userApi';
 
 export default function SettingsPage() {
-  const handleSave = () => {
-    toast.success('Settings updated successfully!');
+  const { data: profile } = useGetProfileQuery();
+  const [updateProfile] = useUpdateProfileMutation();
+  const [changePassword] = useChangePasswordMutation();
+  
+  const [formData, setFormData] = useState({
+    name: profile?.name || '',
+    email: profile?.email || '',
+    phone: profile?.phone || '',
+    language: profile?.language || 'English (US)',
+  });
+  
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  
+  const [showPassword, setShowPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handleProfileUpdate = async () => {
+    try {
+      await updateProfile(formData).unwrap();
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile');
+    }
   };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    try {
+      await changePassword({
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      }).unwrap();
+      toast.success('Password updated successfully!');
+      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setIsChangingPassword(false);
+    } catch (error) {
+      toast.error('Failed to update password');
+    }
+  };
+
+  const initials = profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
 
   return (
     <div className="space-y-8 pb-12">
@@ -46,7 +94,7 @@ export default function SettingsPage() {
           <CardContent className="p-6 space-y-6">
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
               <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold shadow-lg">
-                JD
+                {initials}
               </div>
               <div className="space-y-2">
                 <Button size="sm" className="rounded-xl">Change Avatar</Button>
@@ -59,19 +107,39 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" defaultValue="John Doe" className="h-11 rounded-xl" />
+                <Input 
+                  id="fullName" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="h-11 rounded-xl" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input id="email" defaultValue="john.doe@example.com" className="h-11 rounded-xl" />
+                <Input 
+                  id="email" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="h-11 rounded-xl" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" defaultValue="+1 (555) 123-4567" className="h-11 rounded-xl" />
+                <Input 
+                  id="phone" 
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  className="h-11 rounded-xl" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="language">Preferred Language</Label>
-                <Input id="language" defaultValue="English (US)" className="h-11 rounded-xl" />
+                <Input 
+                  id="language" 
+                  value={formData.language}
+                  onChange={(e) => setFormData({...formData, language: e.target.value})}
+                  className="h-11 rounded-xl" 
+                />
               </div>
             </div>
           </CardContent>
@@ -89,23 +157,71 @@ export default function SettingsPage() {
             </div>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl border">
-                <div className="space-y-1">
-                  <p className="font-bold">Password</p>
-                  <p className="text-sm text-muted-foreground">Last changed 3 months ago.</p>
+            {!isChangingPassword ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl border">
+                  <div className="space-y-1">
+                    <p className="font-bold">Password</p>
+                    <p className="text-sm text-muted-foreground">Last changed recently.</p>
+                  </div>
+                  <Button variant="outline" className="rounded-xl" onClick={() => setIsChangingPassword(true)}>Update Password</Button>
                 </div>
-                <Button variant="outline" className="rounded-xl">Update Password</Button>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl border">
-                <div className="space-y-1">
-                  <p className="font-bold">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl border">
+                  <div className="space-y-1">
+                    <p className="font-bold">Two-Factor Authentication</p>
+                    <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                  </div>
+                  <Switch />
                 </div>
-                <Switch />
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="oldPassword">Current Password</Label>
+                  <div className="relative">
+                    <Input 
+                      id="oldPassword" 
+                      type={showPassword ? 'text' : 'password'}
+                      value={passwordData.oldPassword}
+                      onChange={(e) => setPasswordData({...passwordData, oldPassword: e.target.value})}
+                      className="h-11 rounded-xl pr-10" 
+                    />
+                    <button 
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input 
+                    id="newPassword" 
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    className="h-11 rounded-xl" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input 
+                    id="confirmPassword" 
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                    className="h-11 rounded-xl" 
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsChangingPassword(false)}>Cancel</Button>
+                  <Button onClick={handlePasswordChange}>Update Password</Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -150,7 +266,7 @@ export default function SettingsPage() {
 
       <div className="flex justify-end gap-4 pt-4">
         <Button variant="outline" className="rounded-full px-8">Discard Changes</Button>
-        <Button className="rounded-full px-8 shadow-lg shadow-primary/20" onClick={handleSave}>
+        <Button className="rounded-full px-8 shadow-lg shadow-primary/20" onClick={handleProfileUpdate}>
           <Save className="mr-2 h-4 w-4" /> Save Changes
         </Button>
       </div>

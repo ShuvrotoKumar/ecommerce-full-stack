@@ -19,35 +19,50 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '@/features/cart/cartSlice';
+import { useAddToCartMutation, useAddToWishlistMutation } from '@/services/cartApi';
+import { useGetProductQuery, useAddReviewMutation } from '@/services/productApi';
 import { toast } from 'sonner';
 
-// Mock product data
-const mockProduct = {
-  id: '1',
-  name: 'Premium Wireless Noise Cancelling Headphones',
-  price: 299,
-  oldPrice: 350,
-  rating: 4.8,
-  reviews: 128,
-  description: 'Experience world-class noise cancellation and premium sound quality with the ShopSwift Wireless Headphones. Designed for comfort and built for performance, these headphones deliver up to 30 hours of battery life and crystal-clear calls.',
-  category: 'Electronics',
-  brand: 'SwiftAudio',
-  stock: 15,
-  images: [
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1546435770-a3e426da473b?q=80&w=800&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=800&h=800&fit=crop',
-  ],
-  variants: ['Silver', 'Midnight Black', 'Rose Gold'],
-  specs: [
-    { label: 'Battery Life', value: 'Up to 30 hours' },
-    { label: 'Bluetooth', value: 'v5.2' },
-    { label: 'Weight', value: '250g' },
-    { label: 'Warranty', value: '2 Years' },
-  ]
-};
+export default function ProductDetailsPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: product, isLoading } = useGetProductQuery(id as string);
+  const [addToCart] = useAddToCartMutation();
+  const [addToWishlist] = useAddToWishlistMutation();
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState(product?.variants?.[0] || '');
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="aspect-square bg-muted rounded-3xl animate-pulse" />
+          <div className="space-y-4">
+            <div className="h-8 w-3/4 bg-muted rounded animate-pulse" />
+            <div className="h-6 w-1/2 bg-muted rounded animate-pulse" />
+            <div className="h-10 w-1/4 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return <div className="container mx-auto px-4 py-12">Product not found</div>;
+  }
+
+  const handleAddToCart = () => {
+    addToCart({
+      productId: product._id,
+      quantity: quantity,
+    });
+    toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleAddToWishlist = () => {
+    addToWishlist(product._id);
+    toast.success(`${product.name} added to wishlist!`);
+  };
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -79,8 +94,8 @@ export default function ProductDetailsPage() {
             className="aspect-square bg-muted rounded-3xl overflow-hidden relative"
           >
             <img 
-              src={mockProduct.images[selectedImage]} 
-              alt={mockProduct.name}
+              src={product.images?.[selectedImage]?.url || product.images?.[selectedImage] || 'https://via.placeholder.com/800'} 
+              alt={product.name}
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
             <Badge className="absolute top-6 left-6 px-4 py-1 bg-background/80 backdrop-blur-md text-foreground border-none">
@@ -88,7 +103,7 @@ export default function ProductDetailsPage() {
             </Badge>
           </motion.div>
           <div className="grid grid-cols-3 gap-4">
-            {mockProduct.images.map((img, i) => (
+            {(product.images || []).map((img: any, i: number) => (
               <button
                 key={i}
                 onClick={() => setSelectedImage(i)}
@@ -96,7 +111,7 @@ export default function ProductDetailsPage() {
                   selectedImage === i ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={img} alt={`View ${i}`} className="w-full h-full object-cover" />
+                <img src={img.url || img} alt={`View ${i}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -106,52 +121,58 @@ export default function ProductDetailsPage() {
         <div className="flex flex-col space-y-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-primary uppercase tracking-widest">{mockProduct.brand}</span>
+              <span className="text-sm font-bold text-primary uppercase tracking-widest">{product.brand}</span>
               <Separator orientation="vertical" className="h-4" />
-              <span className="text-sm text-muted-foreground">{mockProduct.category}</span>
+              <span className="text-sm text-muted-foreground">{product.category}</span>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">{mockProduct.name}</h1>
+            <h1 className="text-4xl font-bold tracking-tight">{product.name}</h1>
             <div className="flex items-center gap-4">
               <div className="flex items-center text-yellow-500">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`h-4 w-4 ${i < Math.floor(mockProduct.rating) ? 'fill-current' : ''}`} />
+                  <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating || 0) ? 'fill-current' : ''}`} />
                 ))}
-                <span className="ml-2 text-sm font-bold text-foreground">{mockProduct.rating}</span>
+                <span className="ml-2 text-sm font-bold text-foreground">{product.rating || 0}</span>
               </div>
-              <span className="text-sm text-muted-foreground">({mockProduct.reviews} Reviews)</span>
+              <span className="text-sm text-muted-foreground">({product.reviews || 0} Reviews)</span>
             </div>
           </div>
 
           <div className="flex items-baseline gap-4">
-            <span className="text-4xl font-bold text-primary">${mockProduct.price}</span>
-            <span className="text-xl text-muted-foreground line-through">${mockProduct.oldPrice}</span>
-            <Badge variant="destructive" className="ml-2">Save ${(mockProduct.oldPrice - mockProduct.price).toFixed(0)}</Badge>
+            <span className="text-4xl font-bold text-primary">${product.price}</span>
+            {product.oldPrice && (
+              <>
+                <span className="text-xl text-muted-foreground line-through">${product.oldPrice}</span>
+                <Badge variant="destructive" className="ml-2">Save ${(product.oldPrice - product.price).toFixed(0)}</Badge>
+              </>
+            )}
           </div>
 
           <p className="text-muted-foreground leading-relaxed">
-            {mockProduct.description}
+            {product.description}
           </p>
 
           <Separator />
 
           {/* Selection */}
           <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-sm font-bold uppercase tracking-wider">Select Color</label>
-              <div className="flex flex-wrap gap-3">
-                {mockProduct.variants.map((variant) => (
-                  <Button
-                    key={variant}
-                    variant={selectedVariant === variant ? 'default' : 'outline'}
-                    className="rounded-full px-6"
-                    onClick={() => setSelectedVariant(variant)}
-                  >
-                    {variant}
-                    {selectedVariant === variant && <Check className="ml-2 h-4 w-4" />}
-                  </Button>
-                ))}
+            {product.variants && product.variants.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-sm font-bold uppercase tracking-wider">Select Variant</label>
+                <div className="flex flex-wrap gap-3">
+                  {product.variants.map((variant: string) => (
+                    <Button
+                      key={variant}
+                      variant={selectedVariant === variant ? 'default' : 'outline'}
+                      className="rounded-full px-6"
+                      onClick={() => setSelectedVariant(variant)}
+                    >
+                      {variant}
+                      {selectedVariant === variant && <Check className="ml-2 h-4 w-4" />}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-3">
               <label className="text-sm font-bold uppercase tracking-wider">Quantity</label>
@@ -176,7 +197,7 @@ export default function ProductDetailsPage() {
                   </Button>
                 </div>
                 <span className="text-sm font-medium text-emerald-600">
-                  {mockProduct.stock} items left in stock!
+                  {product.stock} items left in stock!
                 </span>
               </div>
             </div>
@@ -189,7 +210,7 @@ export default function ProductDetailsPage() {
             >
               <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
             </Button>
-            <Button variant="outline" size="icon" className="h-14 w-14 rounded-full">
+            <Button variant="outline" size="icon" className="h-14 w-14 rounded-full" onClick={handleAddToWishlist}>
               <Heart className="h-6 w-6" />
             </Button>
             <Button variant="outline" size="icon" className="h-14 w-14 rounded-full">
@@ -234,16 +255,15 @@ export default function ProductDetailsPage() {
             Specifications
           </TabsTrigger>
           <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">
-            Reviews ({mockProduct.reviews})
+            Reviews ({product.reviews || 0})
           </TabsTrigger>
         </TabsList>
         <TabsContent value="description" className="py-8 text-muted-foreground space-y-4">
-          <p>{mockProduct.description}</p>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+          <p>{product.description}</p>
         </TabsContent>
         <TabsContent value="specs" className="py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-            {mockProduct.specs.map((spec) => (
+            {(product.specs || []).map((spec: any) => (
               <div key={spec.label} className="flex justify-between p-3 border-b">
                 <span className="font-medium text-muted-foreground">{spec.label}</span>
                 <span className="font-bold">{spec.value}</span>
@@ -255,13 +275,11 @@ export default function ProductDetailsPage() {
           <div className="space-y-8">
             <div className="flex items-center gap-4 p-6 bg-muted/30 rounded-3xl">
               <div className="text-center">
-                <h3 className="text-5xl font-bold">4.8</h3>
+                <h3 className="text-5xl font-bold">{product.rating || 0}</h3>
                 <div className="flex text-yellow-500 justify-center my-2">
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating || 0) ? 'fill-current' : ''}`} />
+                  ))}
                 </div>
                 <p className="text-sm text-muted-foreground">Product Rating</p>
               </div>
