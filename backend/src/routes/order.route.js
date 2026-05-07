@@ -20,4 +20,7 @@ router
 router.patch('/:orderId/pay', auth(), orderController.updateOrderToPaid);
 router.patch('/:orderId/deliver', auth('admin'), orderController.updateOrderToDelivered);
 
+// Stripe webhook - needs raw body
+router.post('/webhook', express.raw({type: 'application/json'}), orderController.stripeWebhook);
+
 module.exports = router;
