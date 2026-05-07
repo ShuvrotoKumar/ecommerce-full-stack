@@ -8,6 +8,7 @@ const wishlistRoute = require('./wishlist.route');
 const couponRoute = require('./coupon.route');
 const reviewRoute = require('./review.route');
 const uploadRoute = require('./upload.route');
+const userRoute = require('./user.route');
 const router = express.Router();
 
 const defaultRoutes = [
@@ -46,6 +47,10 @@ const defaultRoutes = [
   {
     path: '/upload',
     route: uploadRoute,
+  },
+  {
+    path: '/users',
+    route: userRoute,
   },
 ];
 

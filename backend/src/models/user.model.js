@@ -44,7 +44,19 @@ const userSchema = mongoose.Schema(
     refreshToken: {
       type: String,
       private: true,
-    }
+    },
+    addresses: [
+      {
+        street: String,
+        city: String,
+        state: String,
+        zipCode: String,
+        country: String,
+        isDefault: { type: Boolean, default: false }
+      }
+    ],
+    phone: String,
+    language: { type: String, default: 'English (US)' }
   },
   {
     timestamps: true,
