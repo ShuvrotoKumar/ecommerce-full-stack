@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '@/features/auth/authSlice';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useLoginMutation } from '@/services/authApi';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -28,6 +29,7 @@ const loginSchema = z.object({
 export function LoginForm() {
   const dispatch = useDispatch();
   const router = useRouter();
+  const [login, { isLoading }] = useLoginMutation();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -39,18 +41,17 @@ export function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
-      // Mock login - in a real app, this would be an API call
-      console.log(values);
+      const response = await login(values).unwrap();
       toast.success('Logged in successfully!');
       
       dispatch(setCredentials({
-        user: { name: 'John Doe', email: values.email },
-        token: 'mock-jwt-token',
+        user: response.user,
+        token: response.tokens.access.token,
       }));
       
       router.push('/dashboard');
-    } catch (error) {
-      toast.error('Invalid credentials');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Invalid credentials');
     }
   }
 
@@ -91,8 +92,8 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
         </Form>

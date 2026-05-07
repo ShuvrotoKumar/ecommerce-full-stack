@@ -17,6 +17,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useRegisterMutation } from '@/services/authApi';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -30,6 +31,7 @@ const registerSchema = z.object({
 
 export function RegisterForm() {
   const router = useRouter();
+  const [register, { isLoading }] = useRegisterMutation();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -43,11 +45,11 @@ export function RegisterForm() {
 
   async function onSubmit(values: z.infer<typeof registerSchema>) {
     try {
-      console.log(values);
+      await register(values).unwrap();
       toast.success('Account created! Please login.');
       router.push('/login');
-    } catch (error) {
-      toast.error('Registration failed');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Registration failed');
     }
   }
 
@@ -114,8 +116,8 @@ export function RegisterForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Creating account...' : 'Register'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating account...' : 'Register'}
             </Button>
           </form>
         </Form>
