@@ -2,6 +2,8 @@ const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const orderService = require('../services/order.service');
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const createOrder = catchAsync(async (req, res) => {
   const order = await orderService.createOrder(req.body, req.user);
   res.status(httpStatus.CREATED).send(order);
@@ -40,6 +42,44 @@ const createPaymentIntent = catchAsync(async (req, res) => {
   });
 });
 
+const createCheckoutSession = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderById(req.params.orderId);
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+  const session = await orderService.createCheckoutSession(order, req.user);
+  res.send({ url: session.url });
+});
+
+const stripeWebhook = catchAsync(async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const orderId = session.metadata.orderId;
+    
+    await orderService.updateOrderToPaid(orderId, {
+      id: session.payment_intent,
+      status: 'succeeded',
+      update_time: new Date().toISOString(),
+      email_address: session.customer_details.email,
+    });
+  }
+
+  res.json({ received: true });
+});
+
 module.exports = {
   createOrder,
   getOrder,
@@ -48,4 +88,6 @@ module.exports = {
   getMyOrders,
   getAllOrders,
   createPaymentIntent,
+  createCheckoutSession,
+  stripeWebhook,
 };

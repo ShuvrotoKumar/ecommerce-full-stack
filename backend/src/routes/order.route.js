@@ -11,6 +11,7 @@ router
 
 router.get('/myorders', auth(), orderController.getMyOrders);
 router.post('/create-payment-intent', auth(), orderController.createPaymentIntent);
+router.post('/:orderId/checkout-session', auth(), orderController.createCheckoutSession);
 
 router
   .route('/:orderId')

@@ -88,6 +88,52 @@ const createPaymentIntent = async (amount) => {
   return paymentIntent;
 };
 
+const createCheckoutSession = async (order, user) => {
+  const lineItems = order.orderItems.map((item) => ({
+    price_data: {
+      currency: 'usd',
+      product_data: {
+        name: item.name,
+        images: [item.image],
+      },
+      unit_amount: Math.round(item.price * 100),
+    },
+    quantity: item.quantity,
+  }));
+
+  // Add shipping if any
+  if (order.shippingPrice > 0) {
+    lineItems.push({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: 'Shipping Fee',
+        },
+        unit_amount: Math.round(order.shippingPrice * 100),
+      },
+      quantity: 1,
+    });
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    customer_email: user.email,
+    client_reference_id: order.id.toString(),
+    line_items: lineItems,
+    success_url: `${process.env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel`,
+    shipping_address_collection: {
+      allowed_countries: ['US', 'CA', 'GB', 'BD'],
+    },
+    metadata: {
+      orderId: order.id.toString(),
+    },
+  });
+
+  return session;
+};
+
 module.exports = {
   createOrder,
   getOrderById,
@@ -96,4 +142,5 @@ module.exports = {
   getMyOrders,
   getAllOrders,
   createPaymentIntent,
+  createCheckoutSession,
 };

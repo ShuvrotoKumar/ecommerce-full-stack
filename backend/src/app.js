@@ -17,6 +17,10 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
+// Stripe webhook must be before express.json() because it needs raw body
+const orderController = require('./controllers/order.controller');
+app.post('/api/v1/orders/webhook', express.raw({ type: 'application/json' }), orderController.stripeWebhook);
+
 // set security HTTP headers
 app.use(helmet());
 
