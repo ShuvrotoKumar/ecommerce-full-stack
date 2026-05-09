@@ -1,11 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { useLoginMutation, useRegisterMutation, useLogoutMutation, useRefreshTokensMutation } from '@/services/authApi';
+import { setAuthCookies, removeAuthCookies, getCookie } from '@/lib/cookies';
 
 interface User {
-  id: string;
+  _id: string;
+  id?: string;
   email: string;
   name: string;
   role: string;
+  avatar?: {
+    url: string;
+    public_id: string;
+  };
+  isEmailVerified?: boolean;
+  phone?: string;
+  language?: string;
 }
 
 interface AuthState {
@@ -32,18 +41,21 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      { payload }: PayloadAction<{ user: User; tokens: { access: string; refresh: string } }>
+      { payload }: PayloadAction<{ user: User; tokens: { access: { token: string }; refresh: { token: string } } }>
     ) => {
       state.user = payload.user;
-      state.token = payload.tokens.access;
-      state.refreshToken = payload.tokens.refresh;
+      state.token = payload.tokens.access.token;
+      state.refreshToken = payload.tokens.refresh.token;
       state.isAuthenticated = true;
       state.error = null;
       
       // Store tokens in localStorage for persistence
-      localStorage.setItem('token', payload.tokens.access);
-      localStorage.setItem('refreshToken', payload.tokens.refresh);
+      localStorage.setItem('token', payload.tokens.access.token);
+      localStorage.setItem('refreshToken', payload.tokens.refresh.token);
       localStorage.setItem('user', JSON.stringify(payload.user));
+      
+      // Store tokens in cookies for server-side access
+      setAuthCookies(payload.tokens.access.token, payload.tokens.refresh.token);
     },
     logout: (state) => {
       state.user = null;
@@ -56,6 +68,9 @@ const authSlice = createSlice({
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      
+      // Clear cookies
+      removeAuthCookies();
     },
     setLoading: (state, { payload }: PayloadAction<boolean>) => {
       state.isLoading = payload;
@@ -64,9 +79,18 @@ const authSlice = createSlice({
       state.error = payload;
     },
     initializeAuth: (state) => {
-      const token = localStorage.getItem('token');
-      const refreshToken = localStorage.getItem('refreshToken');
-      const userStr = localStorage.getItem('user');
+      // Check localStorage first, fallback to cookies
+      let token = localStorage.getItem('token');
+      let refreshToken = localStorage.getItem('refreshToken');
+      let userStr = localStorage.getItem('user');
+      
+      // If not in localStorage, check cookies
+      if (!token) {
+        token = getCookie('token');
+      }
+      if (!refreshToken) {
+        refreshToken = getCookie('refreshToken');
+      }
       
       if (token && refreshToken && userStr) {
         try {
@@ -80,6 +104,7 @@ const authSlice = createSlice({
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
+          removeAuthCookies();
         }
       }
     },

@@ -126,7 +126,7 @@ export default function ShopPage() {
             
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground hidden sm:inline">Sort by:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select value={sortBy} onValueChange={(val) => val && setSortBy(val)}>
                 <SelectTrigger className="w-[180px] bg-background">
                   <SelectValue placeholder="Featured" />
                 </SelectTrigger>
@@ -164,9 +164,25 @@ export default function ShopPage() {
             </div>
           ) : (
             <div className={view === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
-              {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+              {Array.isArray(products) ? products.map((product: any) => (
+                <ProductCard 
+                  key={product._id} 
+                  product={{
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    rating: product.rating || 0,
+                    image: product.images?.[0] || '/placeholder.jpg',
+                    category: product.category || 'Uncategorized',
+                    isNew: product.isNew,
+                    discount: product.discount
+                  }} 
+                />
+              )) : (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  No products found matching your criteria.
+                </div>
+              )}
             </div>
           )}
 

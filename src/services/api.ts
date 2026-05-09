@@ -1,10 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '@/store';
+import { getCookie } from '@/lib/cookies';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: 'http://localhost:5000/api/v1',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token;
+    // Check Redux state first, fallback to cookies
+    let token = (getState() as RootState).auth.token;
+    if (!token) {
+      token = getCookie('token');
+    }
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
@@ -18,7 +23,11 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   
   // If token expired, try to refresh
   if (result.error && result.error.status === 401) {
-    const refreshToken = (api.getState() as RootState).auth.refreshToken;
+    // Check Redux state first, fallback to cookies
+    let refreshToken = (api.getState() as RootState).auth.refreshToken;
+    if (!refreshToken) {
+      refreshToken = getCookie('refreshToken');
+    }
     
     if (refreshToken) {
       const refreshResult = await baseQuery(
@@ -32,7 +41,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
       );
       
       if (refreshResult.data) {
-        // Store new token
+        // Store new token - backend returns user and tokens structure
         api.dispatch({
           type: 'auth/setCredentials',
           payload: refreshResult.data,

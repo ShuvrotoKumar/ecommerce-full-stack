@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '@/features/cart/cartSlice';
+import { useCart } from '@/hooks/useCart';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
@@ -25,18 +25,16 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const dispatch = useDispatch();
+  const { addToCart, isLoading } = useCart();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    dispatch(addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    }));
-    toast.success(`${product.name} added to cart!`);
+    try {
+      await addToCart(product.id, 1);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to add item to cart');
+    }
   };
 
   return (

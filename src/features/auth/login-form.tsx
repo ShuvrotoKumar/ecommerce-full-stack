@@ -42,16 +42,30 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
       const response = await login(values).unwrap();
-      toast.success('Logged in successfully!');
       
+      // Validate response structure
+      if (!response || !response.tokens || !response.user) {
+        throw new Error('Invalid response from server');
+      }
+      
+      // Dispatch with proper structure matching authSlice
       dispatch(setCredentials({
         user: response.user,
-        token: response.tokens.access.token,
+        tokens: {
+          access: { token: response.tokens.access.token },
+          refresh: { token: response.tokens.refresh.token }
+        }
       }));
       
-      router.push('/dashboard');
+      toast.success('Logged in successfully!');
+      
+      // Redirect to home page
+      router.push('/');
+      
     } catch (error: any) {
-      toast.error(error.data?.message || 'Invalid credentials');
+      const errorMsg = error?.data?.message || error?.message || 'Invalid credentials';
+      toast.error(errorMsg);
+      console.error('Login error:', error);
     }
   }
 
@@ -105,7 +119,7 @@ export function LoginForm() {
             Register
           </Link>
         </div>
-        <Link href="/forgot-password" size="sm" className="text-sm text-center text-muted-foreground hover:text-primary">
+        <Link href="/forgot-password" className="text-sm text-center text-muted-foreground hover:text-primary">
           Forgot password?
         </Link>
       </CardFooter>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,29 +11,45 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 export function AuthExample() {
+  const router = useRouter();
   const { login, register, logout, user, isAuthenticated, isLoading, error } = useAuth();
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({ name: '', email: '', password: '' });
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Redirect when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      toast.success(successMessage || 'Welcome back!');
+      router.push('/');
+    }
+  }, [isAuthenticated, router, successMessage]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setSuccessMessage('Login successful!');
       await login(loginData);
-      toast.success('Login successful!');
       setLoginData({ email: '', password: '' });
-    } catch (error) {
-      toast.error('Login failed');
+      // Redirect will happen in useEffect when isAuthenticated becomes true
+    } catch (error: any) {
+      const errorMsg = error?.data?.message || error?.message || 'Login failed. Please check your credentials.';
+      toast.error(errorMsg);
+      setSuccessMessage(null);
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setSuccessMessage('Registration successful!');
       await register(registerData);
-      toast.success('Registration successful!');
       setRegisterData({ name: '', email: '', password: '' });
-    } catch (error) {
-      toast.error('Registration failed');
+      // Redirect will happen in useEffect when isAuthenticated becomes true
+    } catch (error: any) {
+      const errorMsg = error?.data?.message || error?.message || 'Registration failed. Please try again.';
+      toast.error(errorMsg);
+      setSuccessMessage(null);
     }
   };
 
@@ -45,18 +62,17 @@ export function AuthExample() {
     }
   };
 
+  // Show loading state while redirecting
   if (isAuthenticated) {
     return (
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle>Welcome Back!</CardTitle>
-          <CardDescription>You are successfully logged in.</CardDescription>
+          <CardDescription>Redirecting to home page...</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <p><strong>Name:</strong> {user?.name}</p>
-            <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Role:</strong> {user?.role}</p>
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
           <Button onClick={handleLogout} disabled={isLoading} className="w-full">
             {isLoading ? 'Logging out...' : 'Logout'}

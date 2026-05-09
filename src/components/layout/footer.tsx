@@ -37,16 +37,16 @@ export function Footer() {
             </p>
             <div className="flex space-x-4">
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Globe className="h-5 w-5" />
+                <Globe className="h-5 w-5" suppressHydrationWarning />
               </Link>
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <MessageCircle className="h-5 w-5" />
+                <MessageCircle className="h-5 w-5" suppressHydrationWarning />
               </Link>
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Share2 className="h-5 w-5" />
+                <Share2 className="h-5 w-5" suppressHydrationWarning />
               </Link>
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Video className="h-5 w-5" />
+                <Video className="h-5 w-5" suppressHydrationWarning />
               </Link>
             </div>
           </div>
@@ -81,15 +81,15 @@ export function Footer() {
               <h3 className="font-semibold mb-4">Contact</h3>
               <ul className="space-y-3">
                 <li className="flex items-center space-x-3 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <MapPin className="h-4 w-4 text-primary shrink-0" suppressHydrationWarning />
                   <span>123 Commerce St, Digital City, 10101</span>
                 </li>
                 <li className="flex items-center space-x-3 text-sm text-muted-foreground">
-                  <Phone className="h-4 w-4 text-primary shrink-0" />
+                  <Phone className="h-4 w-4 text-primary shrink-0" suppressHydrationWarning />
                   <span>+1 (555) 123-4567</span>
                 </li>
                 <li className="flex items-center space-x-3 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4 text-primary shrink-0" />
+                  <Mail className="h-4 w-4 text-primary shrink-0" suppressHydrationWarning />
                   <span>support@shopswift.com</span>
                 </li>
               </ul>

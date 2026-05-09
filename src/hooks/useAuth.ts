@@ -23,12 +23,29 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       dispatch(setError(null));
       const result = await loginMutation(credentials).unwrap();
+      
+      // Validate the response structure
+      if (!result || !result.tokens || !result.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       dispatch(setCredentials(result));
       return result;
     } catch (error: any) {
-      const errorMessage = error?.data?.message || 'Login failed';
+      // Extract proper error message from RTK Query error
+      let errorMessage = 'Login failed';
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.status === 401) {
+        errorMessage = 'Invalid email or password';
+      }
+      
       dispatch(setError(errorMessage));
-      throw error;
+      throw { ...error, message: errorMessage };
     } finally {
       dispatch(setLoading(false));
     }
@@ -43,12 +60,27 @@ export const useAuth = () => {
       dispatch(setLoading(true));
       dispatch(setError(null));
       const result = await registerMutation(userData).unwrap();
+      
+      // Validate the response structure
+      if (!result || !result.tokens || !result.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       dispatch(setCredentials(result));
       return result;
     } catch (error: any) {
-      const errorMessage = error?.data?.message || 'Registration failed';
+      // Extract proper error message from RTK Query error
+      let errorMessage = 'Registration failed';
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       dispatch(setError(errorMessage));
-      throw error;
+      throw { ...error, message: errorMessage };
     } finally {
       dispatch(setLoading(false));
     }

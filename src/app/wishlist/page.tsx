@@ -12,7 +12,7 @@ import { useAddToCartMutation } from '@/services/cartApi';
 import { toast } from 'sonner';
 
 export default function WishlistPage() {
-  const { data: items = [], isLoading } = useGetWishlistQuery();
+  const { data: items = [], isLoading } = useGetWishlistQuery(undefined);
   const [addToCart] = useAddToCartMutation();
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
@@ -32,7 +32,7 @@ export default function WishlistPage() {
       <div className="container mx-auto px-4 py-24 text-center">
         <div className="flex flex-col items-center max-w-md mx-auto space-y-6">
           <div className="p-6 bg-muted rounded-full animate-pulse">
-            <Heart className="h-16 w-16 text-muted-foreground" />
+            <Heart className="h-16 w-16 text-muted-foreground" suppressHydrationWarning />
           </div>
           <p>Loading...</p>
         </div>
@@ -42,17 +42,17 @@ export default function WishlistPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-24 text-center">
+      <div className="container mx-auto px-4 py-24 text-center" suppressHydrationWarning>
         <div className="flex flex-col items-center max-w-md mx-auto space-y-6">
           <div className="p-6 bg-muted rounded-full">
-            <Heart className="h-16 w-16 text-muted-foreground" />
+            <Heart className="h-16 w-16 text-muted-foreground" suppressHydrationWarning />
           </div>
           <h1 className="text-3xl font-bold">Your wishlist is empty</h1>
           <p className="text-muted-foreground">
             Save your favorite items here to keep track of them and buy them later.
           </p>
-          <Button asChild size="lg" className="rounded-full px-8">
-            <Link href="/shop">Explore Products</Link>
+          <Button size="lg" className="rounded-full px-8" render={<Link href="/shop" />}>
+            Explore Products
           </Button>
         </div>
       </div>
@@ -64,14 +64,16 @@ export default function WishlistPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Wishlist</h1>
-          <p className="text-muted-foreground">You have {items.length} items saved in your wishlist.</p>
+          <p className="text-muted-foreground">You have {Array.isArray(items) ? items.length : 0} items saved in your wishlist.</p>
         </div>
         <Button variant="outline" className="rounded-full" onClick={() => {
-          items.forEach(item => {
-            addToCart({ productId: item._id || item.productId, quantity: 1 });
-            removeFromWishlist(item._id || item.productId);
-          });
-          toast.success('All items moved to cart!');
+          if (Array.isArray(items)) {
+            items.forEach((item: any) => {
+              addToCart({ productId: item._id || item.productId, quantity: 1 });
+              removeFromWishlist(item._id || item.productId);
+            });
+            toast.success('All items moved to cart!');
+          }
         }}>
           Add All to Cart
         </Button>
@@ -79,7 +81,7 @@ export default function WishlistPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         <AnimatePresence>
-          {items.map((item) => (
+          {Array.isArray(items) && items.map((item: any) => (
             <motion.div
               key={item._id || item.productId}
               layout
@@ -101,8 +103,9 @@ export default function WishlistPage() {
                       variant="destructive" 
                       className="rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => handleRemove(item._id || item.productId, item.product?.name || item.name)}
+                      suppressHydrationWarning
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" suppressHydrationWarning />
                     </Button>
                   </div>
                 </div>
@@ -112,8 +115,8 @@ export default function WishlistPage() {
                     <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors">{item.product?.name || item.name}</h3>
                     <p className="text-xl font-bold text-primary mt-1">${item.product?.price || item.price}</p>
                   </div>
-                  <Button className="w-full rounded-full" onClick={() => handleMoveToCart(item)}>
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                  <Button className="w-full rounded-full" onClick={() => handleMoveToCart(item)} suppressHydrationWarning>
+                    <ShoppingCart className="mr-2 h-4 w-4" suppressHydrationWarning /> Add to Cart
                   </Button>
                 </CardContent>
               </Card>

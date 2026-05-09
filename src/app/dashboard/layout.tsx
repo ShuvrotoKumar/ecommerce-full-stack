@@ -20,6 +20,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '@/features/auth/authSlice';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useGetProfileQuery } from '@/services/userApi';
 
 const sidebarLinks = [
   { name: 'Profile', href: '/dashboard', icon: User },
@@ -37,6 +38,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const dispatch = useDispatch();
   const router = useRouter();
+  const { data: profile, isLoading } = useGetProfileQuery(undefined);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -44,20 +46,40 @@ export default function DashboardLayout({
     router.push('/login');
   };
 
+  const initials = profile?.name
+    ? profile.name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+    : 'U';
+
+  const roleName = profile?.role === 'admin' ? 'Premium Member' : 'Member';
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Sidebar */}
         <aside className="w-full lg:w-64 space-y-8">
-          <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-2xl">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">
-              JD
+          {isLoading ? (
+            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-2xl animate-pulse">
+              <div className="w-12 h-12 rounded-full bg-muted" />
+              <div className="space-y-2 flex-grow">
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-1/2" />
+              </div>
             </div>
-            <div>
-              <p className="font-bold">John Doe</p>
-              <p className="text-xs text-muted-foreground">Premium Member</p>
+          ) : (
+            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-2xl">
+              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">
+                {initials}
+              </div>
+              <div>
+                <p className="font-bold line-clamp-1">{profile?.name || 'User'}</p>
+                <p className="text-xs text-muted-foreground">{roleName}</p>
+              </div>
             </div>
-          </div>
+          )}
 
           <nav className="space-y-1">
             {sidebarLinks.map((link) => (

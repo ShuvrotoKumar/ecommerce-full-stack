@@ -23,16 +23,28 @@ import { toast } from 'sonner';
 import { useGetProfileQuery, useUpdateProfileMutation, useChangePasswordMutation } from '@/services/userApi';
 
 export default function SettingsPage() {
-  const { data: profile } = useGetProfileQuery();
+  const { data: profile, isLoading } = useGetProfileQuery(undefined);
   const [updateProfile] = useUpdateProfileMutation();
   const [changePassword] = useChangePasswordMutation();
   
   const [formData, setFormData] = useState({
-    name: profile?.name || '',
-    email: profile?.email || '',
-    phone: profile?.phone || '',
-    language: profile?.language || 'English (US)',
+    name: '',
+    email: '',
+    phone: '',
+    language: 'English (US)',
   });
+
+  // Sync form data with profile when it loads
+  React.useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        language: profile.language || 'English (US)',
+      });
+    }
+  }, [profile]);
   
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
@@ -70,7 +82,15 @@ export default function SettingsPage() {
     }
   };
 
-  const initials = profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+  const initials = profile?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U';
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
