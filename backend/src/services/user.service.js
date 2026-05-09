@@ -22,6 +22,13 @@ const getUserByRefreshToken = async (refreshToken) => {
   return User.findOne({ refreshToken });
 };
 
+const getUserByResetPasswordToken = async (resetPasswordToken) => {
+  return User.findOne({ 
+    resetPasswordToken, 
+    resetPasswordExpires: { $gt: new Date() } 
+  });
+};
+
 const updateUserById = async (userId, updateBody) => {
   const user = await getUserById(userId);
   if (!user) {
@@ -84,6 +91,7 @@ module.exports = {
   getUserByEmail,
   getUserById,
   getUserByRefreshToken,
+  getUserByResetPasswordToken,
   updateUserById,
   changePassword,
   getAddresses,

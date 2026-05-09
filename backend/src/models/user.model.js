@@ -45,6 +45,14 @@ const userSchema = mongoose.Schema(
       type: String,
       private: true,
     },
+    resetPasswordToken: {
+      type: String,
+      private: true,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      private: true,
+    },
     addresses: [
       {
         street: String,
