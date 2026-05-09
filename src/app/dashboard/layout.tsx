@@ -81,7 +81,7 @@ export default function DashboardLayout({
             </div>
           )}
 
-          <nav className="space-y-1">
+          <nav className="space-y-1" suppressHydrationWarning>
             {sidebarLinks.map((link) => (
               <Link
                 key={link.name}
@@ -92,18 +92,20 @@ export default function DashboardLayout({
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
                     : 'hover:bg-muted text-muted-foreground hover:text-foreground'
                 )}
+                suppressHydrationWarning
               >
-                <link.icon className={cn("h-5 w-5", pathname === link.href ? "" : "group-hover:text-primary")} />
+                <link.icon className={cn("h-5 w-5", pathname === link.href ? "" : "group-hover:text-primary")} suppressHydrationWarning />
                 <span className="font-medium">{link.name}</span>
-                {pathname === link.href && <ChevronRight className="ml-auto h-4 w-4" />}
+                {pathname === link.href && <ChevronRight className="ml-auto h-4 w-4" suppressHydrationWarning />}
               </Link>
             ))}
             <Separator className="my-4" />
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive group"
+              suppressHydrationWarning
             >
-              <LogOut className="h-5 w-5 group-hover:text-destructive" />
+              <LogOut className="h-5 w-5 group-hover:text-destructive" suppressHydrationWarning />
               <span className="font-medium">Logout</span>
             </button>
           </nav>
