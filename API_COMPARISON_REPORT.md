@@ -263,6 +263,55 @@ import { useAddToWishlistMutation } from '@/services/wishlistApi';
 
 **Status:** ✅ Fixed
 
+### Issue #5: CORS Error on Registration
+**Error:** CORS error when making requests from frontend to backend
+
+**Problem:** CORS configuration was not properly handling preflight OPTIONS requests.
+
+**Fix:**
+- Added custom preflight handler middleware before routes
+- Added explicit CORS headers for all API routes
+- Created `.env.local` file in frontend with `NEXT_PUBLIC_API_URL`
+- Updated CORS configuration with explicit methods and headers
+
+**Status:** ✅ Fixed
+
+### Issue #6: express-mongo-sanitize Compatibility with Express 5
+**Error:** `Cannot set property query of #<IncomingMessage> which has only a getter`
+
+**Problem:** `express-mongo-sanitize` package is also incompatible with Express 5 due to changes in the IncomingMessage class.
+
+**Fix:**
+- Removed `express-mongo-sanitize` dependency from `package.json`
+- Removed `express-mongo-sanitize` import and usage from `app.js`
+- Added comment explaining the removal
+- MongoDB sanitization is handled at the model level
+
+**Status:** ✅ Fixed
+
+### Issue #7: Mongoose Pre-Save Hook Error
+**Error:** `next is not a function`
+
+**Problem:** When using `async` with Mongoose pre-save hooks, calling `next()` manually causes an error because Mongoose handles it automatically.
+
+**Fix:**
+- Removed manual `next()` calls from async pre-save hooks in `user.model.js`
+- Mongoose automatically calls `next()` after async hooks complete
+
+**Status:** ✅ Fixed
+
+### Issue #8: Frontend API URL Configuration
+**Error:** "Not found" when calling API endpoints from frontend
+
+**Problem:** Frontend was using incorrect API URL (`/api` instead of `/api/v1`).
+
+**Fix:**
+- Updated `NEXT_PUBLIC_API_URL` in `.env.local` to `http://localhost:5000/api/v1`
+- Updated `api.ts` to use correct default URL
+- Removed rewrites configuration (not needed)
+
+**Status:** ✅ Fixed
+
 ---
 
 ## 📋 Missing Frontend Pages
@@ -352,9 +401,10 @@ The application is ready for deployment with:
 3. **Add Search Suggestions:** No autocomplete/suggestions API for product search
 4. **Add Newsletter Subscription:** No API for newsletter signup
 5. **Add Stripe Webhook Secret:** Update `.env` with actual Stripe webhook secret for production
+6. **Add Frontend .env.local:** Create `.env.local` in frontend with `NEXT_PUBLIC_API_URL` for production deployment
 
 ---
 
 **Report Generated:** May 9, 2026
 **Analyst:** Kiro AI Assistant
-**Status:** ✅ All APIs Matched, Minor Issue Fixed, Password Reset Endpoints Added, Compatibility Issues Fixed
+**Status:** ✅ All APIs Matched, Minor Issue Fixed, Password Reset Endpoints Added, All Compatibility Issues Fixed, Registration Working, API URL Fixed
