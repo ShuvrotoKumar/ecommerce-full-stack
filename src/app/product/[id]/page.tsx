@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 import { useAddToCartMutation } from '@/services/cartApi';
 import { useAddToWishlistMutation } from '@/services/wishlistApi';
-import { useGetProductQuery, useAddReviewMutation } from '@/services/productApi';
+import { useGetProductQuery } from '@/services/productApi';
 import { toast } from 'sonner';
 
 export default function ProductDetailsPage() {
@@ -63,25 +63,6 @@ export default function ProductDetailsPage() {
   const handleAddToWishlist = () => {
     addToWishlist(product._id);
     toast.success(`${product.name} added to wishlist!`);
-  };
-
-export default function ProductDetailsPage() {
-  const { id } = useParams();
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState(mockProduct.variants[0]);
-  const dispatch = useDispatch();
-
-  const handleAddToCart = () => {
-    dispatch(addToCart({
-      id: mockProduct.id,
-      name: mockProduct.name,
-      price: mockProduct.price,
-      quantity: quantity,
-      image: mockProduct.images[0],
-      variant: selectedVariant,
-    }));
-    toast.success(`${mockProduct.name} added to cart!`);
   };
 
   return (
