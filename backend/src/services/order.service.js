@@ -2,7 +2,13 @@ const httpStatus = require('http-status');
 const Order = require('../models/order.model');
 const Product = require('../models/product.model');
 const ApiError = require('../utils/ApiError');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+let stripe;
+try {
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+} catch (error) {
+  console.warn('Stripe not configured - payment functionality will be disabled');
+}
 
 const createOrder = async (orderBody, user) => {
   const { orderItems, shippingAddress, paymentMethod, itemsPrice, taxPrice, shippingPrice, totalPrice } = orderBody;
@@ -80,6 +86,10 @@ const getAllOrders = async () => {
 };
 
 const createPaymentIntent = async (amount) => {
+  if (!stripe) {
+    throw new Error('Stripe is not configured');
+  }
+  
   const paymentIntent = await stripe.paymentIntents.create({
     amount: Math.round(amount * 100), // amount in cents
     currency: 'usd',
@@ -89,6 +99,10 @@ const createPaymentIntent = async (amount) => {
 };
 
 const createCheckoutSession = async (order, user) => {
+  if (!stripe) {
+    throw new Error('Stripe is not configured');
+  }
+  
   const lineItems = order.orderItems.map((item) => ({
     price_data: {
       currency: 'usd',
