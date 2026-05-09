@@ -19,7 +19,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
-import { useAddToCartMutation, useAddToWishlistMutation } from '@/services/cartApi';
+import { useAddToCartMutation } from '@/services/cartApi';
+import { useAddToWishlistMutation } from '@/services/wishlistApi';
 import { useGetProductQuery, useAddReviewMutation } from '@/services/productApi';
 import { toast } from 'sonner';
 

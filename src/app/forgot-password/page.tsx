@@ -18,12 +18,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import Link from 'next/link';
 import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useForgotPasswordMutation } from '@/services/authApi';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
 export default function ForgotPasswordPage() {
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [isSubmitted, setIsSubmitted] = React.useState(false);
 
   const form = useForm<z.infer<typeof forgotPasswordSchema>>({
@@ -35,11 +37,11 @@ export default function ForgotPasswordPage() {
 
   async function onSubmit(values: z.infer<typeof forgotPasswordSchema>) {
     try {
-      console.log(values);
+      await forgotPassword(values.email).unwrap();
       setIsSubmitted(true);
       toast.success('Reset link sent to your email!');
-    } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Something went wrong. Please try again.');
     }
   }
 
