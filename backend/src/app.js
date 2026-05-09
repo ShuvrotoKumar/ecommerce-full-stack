@@ -1,6 +1,5 @@
 const express = require('express');
 const helmet = require('helmet');
-const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 const compression = require('compression');
 const cors = require('cors');
@@ -38,8 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 // parse cookies
 app.use(cookieParser());
 
-// sanitize request data
-app.use(xss());
+// sanitize request data (xss-clean removed due to Express 5 compatibility)
 app.use(mongoSanitize());
 
 // enable cors

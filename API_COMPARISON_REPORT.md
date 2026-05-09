@@ -226,6 +226,43 @@ import { useAddToWishlistMutation } from '@/services/wishlistApi';
 
 **Status:** ✅ Fixed
 
+### Issue #2: Stripe API Key Error
+**Error:** `Neither apiKey nor config.authenticator provided`
+
+**Problem:** Stripe was being initialized at module load time before environment variables were loaded.
+
+**Fix:**
+- Updated `order.service.js` and `order.controller.js` to handle missing Stripe API key gracefully
+- Added try-catch blocks around Stripe initialization
+- Added checks before using Stripe functionality
+- Updated error messages to inform users when payment service is not configured
+
+**Status:** ✅ Fixed
+
+### Issue #3: MongoDB Connection Error
+**Error:** `The uri parameter to openUri() must be a string, got "undefined"`
+
+**Problem:** .env file was not being loaded from the correct path.
+
+**Fix:**
+- Updated `index.js` to explicitly load .env file from the correct path
+- Changed `require('dotenv').config()` to `require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') })`
+
+**Status:** ✅ Fixed
+
+### Issue #4: xss-clean Compatibility with Express 5
+**Error:** `Cannot set property query of #<IncomingMessage> which has only a getter`
+
+**Problem:** `xss-clean` package is incompatible with Express 5 due to changes in the IncomingMessage class.
+
+**Fix:**
+- Removed `xss-clean` dependency from `package.json`
+- Removed `xss-clean` import and usage from `app.js`
+- Kept `express-mongo-sanitize` for MongoDB query sanitization
+- Added comment explaining the removal
+
+**Status:** ✅ Fixed
+
 ---
 
 ## 📋 Missing Frontend Pages
@@ -314,9 +351,10 @@ The application is ready for deployment with:
 2. **Add Order Tracking:** Frontend has tracking UI but no backend endpoint
 3. **Add Search Suggestions:** No autocomplete/suggestions API for product search
 4. **Add Newsletter Subscription:** No API for newsletter signup
+5. **Add Stripe Webhook Secret:** Update `.env` with actual Stripe webhook secret for production
 
 ---
 
 **Report Generated:** May 9, 2026
 **Analyst:** Kiro AI Assistant
-**Status:** ✅ All APIs Matched, Minor Issue Fixed, Password Reset Endpoints Added
+**Status:** ✅ All APIs Matched, Minor Issue Fixed, Password Reset Endpoints Added, Compatibility Issues Fixed
