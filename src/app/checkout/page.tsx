@@ -25,33 +25,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store';
-import { clearLocalCart } from '@/features/cart/cartSlice';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { toast } from 'sonner';
-
-const checkoutSchema = z.object({
-  firstName: z.string().min(2, 'Required'),
-  lastName: z.string().min(2, 'Required'),
-  email: z.string().email('Invalid email'),
-  address: z.string().min(5, 'Required'),
-  city: z.string().min(2, 'Required'),
-  zipCode: z.string().min(5, 'Required'),
-  country: z.string().min(2, 'Required'),
-  cardNumber: z.string().regex(/^\d{16}$/, 'Invalid card number'),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, 'MM/YY format'),
-  cvv: z.string().regex(/^\d{3,4}$/, 'Invalid CVV'),
-});
-
-type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+import { useCart } from '@/hooks/useCart';
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
-  const { items, totalAmount } = useSelector((state: RootState) => state.cart);
-  const dispatch = useDispatch();
+  const { items, totalAmount, clearCart } = useCart();
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -71,7 +50,7 @@ export default function CheckoutPage() {
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setIsCompleted(true);
-    dispatch(clearLocalCart());
+    await clearCart();
     toast.success('Order placed successfully!');
   };
 

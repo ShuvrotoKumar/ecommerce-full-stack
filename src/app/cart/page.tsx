@@ -9,24 +9,23 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { useGetCartQuery, useAddToCartMutation, useRemoveFromCartMutation, useClearCartMutation } from '@/services/cartApi';
-import { useDispatch } from 'react-redux';
-import { clearLocalCart } from '@/features/cart/cartSlice';
+import { useCart } from '@/hooks/useCart';
 
 export default function CartPage() {
-  const { data: cart, isLoading } = useGetCartQuery({});
-  const [addToCart] = useAddToCartMutation();
-  const [removeFromCart] = useRemoveFromCartMutation();
-  const [clearCart] = useClearCartMutation();
-  const dispatch = useDispatch();
-
-  const items = cart?.items || [];
-  const totalAmount = cart?.totalAmount || 0;
-  const totalQuantity = cart?.totalQuantity || 0;
-
+  const { 
+    items, 
+    totalQuantity, 
+    totalAmount, 
+    isLoading, 
+    error,
+    addToCart,
+    removeFromCart,
+    clearCart
+  } = useCart();
+  
   const handleUpdateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    addToCart({ productId, quantity: newQuantity });
+    addToCart(productId, newQuantity);
   };
 
   const handleRemoveItem = (productId: string, name: string) => {
@@ -35,8 +34,7 @@ export default function CartPage() {
   };
 
   const handleClearCart = () => {
-    clearCart({});
-    dispatch(clearLocalCart());
+    clearCart();
     toast.success('Cart cleared');
   };
 
