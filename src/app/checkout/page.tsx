@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
-import { clearCart } from '@/features/cart/cartSlice';
+import { clearLocalCart } from '@/features/cart/cartSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -72,7 +72,7 @@ export default function CheckoutPage() {
   const onSubmit = async (values: CheckoutFormValues) => {
     console.log(values);
     setIsCompleted(true);
-    dispatch(clearCart());
+    dispatch(clearLocalCart());
     toast.success('Order placed successfully!');
   };
 
@@ -106,9 +106,7 @@ export default function CheckoutPage() {
             Your order #SW-12345 has been placed and is being processed.
           </p>
           <div className="pt-6">
-            <Button render={<Link href="/dashboard/orders" />} size="lg" className="rounded-full px-8">
-              View Your Orders
-            </Button>
+            <Button render={<Link href="/dashboard/orders">View Your Orders</Link>} size="lg" className="rounded-full px-8" />
           </div>
         </motion.div>
       </div>
@@ -321,10 +319,10 @@ export default function CheckoutPage() {
                     </div>
                     <div className="p-6 border rounded-2xl space-y-4">
                       <h3 className="font-bold">Items to Ship</h3>
-                      {items.map((item) => (
-                        <div key={item.id} className="flex justify-between text-sm">
-                          <span>{item.name} x {item.quantity}</span>
-                          <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                      {items.map((item: any) => (
+                        <div key={item.productId || item._id || item.id} className="flex justify-between text-sm">
+                          <span>{(item.product?.name || item.name)} x {item.quantity}</span>
+                          <span className="font-medium">${((item.product?.price || item.price || 0) * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
@@ -338,9 +336,7 @@ export default function CheckoutPage() {
                     <ChevronLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
                 ) : (
-                  <Button type="button" variant="outline" render={<Link href="/cart" />} className="rounded-full px-8">
-                    Back to Cart
-                  </Button>
+                  <Button type="button" variant="outline" render={<Link href="/cart">Back to Cart</Link>} className="rounded-full px-8" />
                 )}
 
                 {step < 3 ? (
@@ -365,15 +361,15 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-4">
+                {items.map((item: any) => (
+                  <div key={item.productId || item._id || item.id} className="flex gap-4">
                     <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.product?.images?.[0]?.url || item.product?.images?.[0] || item.image} alt={item.product?.name || item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-grow min-w-0">
-                      <p className="text-sm font-bold truncate">{item.name}</p>
+                      <p className="text-sm font-bold truncate">{item.product?.name || item.name}</p>
                       <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
-                      <p className="text-sm font-bold mt-1">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-sm font-bold mt-1">${((item.product?.price || item.price || 0) * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}

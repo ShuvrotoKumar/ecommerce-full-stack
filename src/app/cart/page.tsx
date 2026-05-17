@@ -10,13 +10,16 @@ import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useGetCartQuery, useAddToCartMutation, useRemoveFromCartMutation, useClearCartMutation } from '@/services/cartApi';
+import { useDispatch } from 'react-redux';
+import { clearLocalCart } from '@/features/cart/cartSlice';
 
 export default function CartPage() {
-  const { data: cart, isLoading } = useGetCartQuery();
+  const { data: cart, isLoading } = useGetCartQuery({});
   const [addToCart] = useAddToCartMutation();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [clearCart] = useClearCartMutation();
-  
+  const dispatch = useDispatch();
+
   const items = cart?.items || [];
   const totalAmount = cart?.totalAmount || 0;
   const totalQuantity = cart?.totalQuantity || 0;
@@ -32,7 +35,8 @@ export default function CartPage() {
   };
 
   const handleClearCart = () => {
-    clearCart();
+    clearCart({});
+    dispatch(clearLocalCart());
     toast.success('Cart cleared');
   };
 
@@ -61,9 +65,7 @@ export default function CartPage() {
             Looks like you haven&apos;t added anything to your cart yet. 
             Explore our shop to find the best deals!
           </p>
-          <Button asChild size="lg" className="rounded-full px-8">
-            <Link href="/shop">Start Shopping</Link>
-          </Button>
+          <Button size="lg" className="rounded-full px-8" render={<Link href="/shop">Start Shopping</Link>} />
         </div>
       </div>
     );
@@ -77,7 +79,7 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-6">
           <AnimatePresence>
-              {items.map((item) => (
+              {items.map((item: any) => (
                 <motion.div
                   key={item.productId || item._id}
                   layout
@@ -198,9 +200,7 @@ export default function CartPage() {
                     <Button variant="secondary" className="h-10 px-4">Apply</Button>
                   </div>
                 </div>
-                <Button className="w-full h-12 rounded-full font-bold text-lg shadow-lg" render={<Link href="/checkout" />}>
-                  Proceed to Checkout <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <Button className="w-full h-12 rounded-full font-bold text-lg shadow-lg" render={<Link href="/checkout">Proceed to Checkout <ArrowRight className="ml-2 h-5 w-5" /></Link>} />
               </div>
             </CardContent>
           </Card>

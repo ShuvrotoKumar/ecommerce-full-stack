@@ -30,12 +30,17 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Attempt to refresh token
-        const response = await axios.post('/auth/refresh-token');
-        const { token, user } = response.data;
+        const refreshToken = store.getState().auth.refreshToken;
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
 
-        store.dispatch(setCredentials({ token, user }));
+        const response = await axios.post('http://localhost:5000/api/v1/auth/refresh-tokens', { refreshToken });
+        const { tokens, user } = response.data;
 
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        store.dispatch(setCredentials({ tokens, user }));
+
+        originalRequest.headers.Authorization = `Bearer ${tokens.access.token}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         store.dispatch(logout());
