@@ -70,7 +70,6 @@ export default function CheckoutPage() {
   });
 
   const onSubmit = async (values: CheckoutFormValues) => {
-    console.log(values);
     setIsCompleted(true);
     dispatch(clearLocalCart());
     toast.success('Order placed successfully!');
