@@ -8,13 +8,27 @@ const mongoSanitize = require('express-mongo-sanitize');
 const routes = require('./routes');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
-const { authLimiter } = require('./middlewares/rateLimiter');
+const { authLimiter, apiLimiter } = require('./middlewares/rateLimiter');
 
 const app = express();
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
+
+// Stripe webhook must be before express.json() because it needs raw body
+const orderController = require('./controllers/order.controller');
+app.post('/api/v1/orders/webhook', express.raw({ type: 'application/json' }), orderController.stripeWebhook);
+
+// set security HTTP headers
+app.use(helmet());
+
+// Apply rate limiters in production
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/v1', apiLimiter);
+  app.use('/api/v1/auth', authLimiter);
+}
+
 
 // Stripe webhook must be before express.json() because it needs raw body
 const orderController = require('./controllers/order.controller');
