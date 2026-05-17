@@ -26,6 +26,19 @@ export default function Home() {
     <div className="flex flex-col gap-16 pb-16">
       {/* Hero Section */}
       <section className="relative h-[80vh] flex items-center overflow-hidden bg-muted">
+        {/* Morphing Blob */}
+        <motion.div
+          animate={{
+            borderRadius: ["30% 70% 70% 30% / 30% 30% 70% 70%", "70% 30% 30% 70% / 70% 70% 30% 30%", "30% 70% 70% 30% / 30% 30% 70% 70%"],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 blur-3xl z-0"
+        />
+        
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&h=1080&fit=crop"
@@ -34,12 +47,12 @@ export default function Home() {
           />
         </div>
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl"
-          >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+              className="max-w-2xl"
+            >
             <Badge className="mb-4 py-1 px-3 text-sm font-medium">New Summer Collection 2026</Badge>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 leading-tight">
               Elevate Your Lifestyle with <span className="text-primary">ShopSwift</span>
@@ -60,7 +73,13 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        className="container mx-auto px-4"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
             { icon: Truck, title: 'Free Shipping', desc: 'On orders over $100' },
@@ -79,10 +98,16 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Categories Section */}
-      <section className="container mx-auto px-4">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        className="container mx-auto px-4"
+      >
         <div className="flex justify-between items-end mb-8">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Shop by Category</h2>
@@ -120,10 +145,16 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Trending Products */}
-      <section className="container mx-auto px-4">
+      <motion.section 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        className="container mx-auto px-4"
+      >
         <div className="flex justify-between items-end mb-8">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Trending Now</h2>
@@ -171,10 +202,16 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Newsletter Section */}
-      <section className="container mx-auto px-4">
+      <motion.section 
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        className="container mx-auto px-4"
+      >
         <div className="bg-primary text-primary-foreground rounded-3xl p-8 md:p-16 flex flex-col items-center text-center space-y-6 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full translate-x-1/4 translate-y-1/4" />
@@ -197,7 +234,7 @@ export default function Home() {
             By subscribing, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
