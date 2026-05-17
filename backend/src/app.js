@@ -4,6 +4,7 @@ const compression = require('compression');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const mongoSanitize = require('express-mongo-sanitize');
 const routes = require('./routes');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
@@ -53,8 +54,8 @@ app.use(express.urlencoded({ extended: true }));
 // parse cookies
 app.use(cookieParser());
 
-// Note: express-mongo-sanitize removed due to Express 5 compatibility
-// MongoDB sanitization is handled at the model level
+// sanitize data
+app.use(mongoSanitize());
 
 // enable cors
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', process.env.FRONTEND_URL];
