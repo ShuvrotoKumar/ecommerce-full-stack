@@ -3,7 +3,7 @@ import { store } from '@/store';
 import { logout, setCredentials } from '@/features/auth/authSlice';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
-        const response = await axios.post('http://localhost:5000/api/v1/auth/refresh-tokens', { refreshToken });
+        const response = await axiosInstance.post('/auth/refresh-tokens', { refreshToken });
         const { tokens, user } = response.data;
 
         store.dispatch(setCredentials({ tokens, user }));

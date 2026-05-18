@@ -3,7 +3,7 @@ import { RootState } from '@/store';
 import { getCookie } from '@/lib/cookies';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:5000/api/v1',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',
   prepareHeaders: (headers, { getState }) => {
     // Check Redux state first, fallback to cookies
     let token = (getState() as RootState).auth.token;
