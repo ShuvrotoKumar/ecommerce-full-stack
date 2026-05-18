@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Order } from '@/types/order';
 import { 
   ShoppingBag, 
   Heart, 
@@ -32,7 +33,7 @@ export default function DashboardPage() {
 
   const firstName = profile?.name?.split(' ')[0] || 'User';
   const roleName = profile?.role === 'admin' ? 'Premium Member' : 'Member';
-  const totalSpent = orders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+  const totalSpent = orders.reduce((sum: number, order: Order) => sum + (order.totalAmount || 0), 0);
   const recentOrders = orders.slice(0, 3);
   const defaultAddress = addresses.find((addr: any) => addr.isDefault) || addresses[0];
 
@@ -118,7 +119,7 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-4">
             {recentOrders.length > 0 ? (
-              recentOrders.map((order: any) => (
+              recentOrders.map((order: Order) => (
                 <Card key={order._id} className="border-none shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
                   <CardContent className="p-0">
                     <div className="flex items-center p-4 gap-4">

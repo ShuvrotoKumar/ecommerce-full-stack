@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Order } from '@/types/order';
 import { Package, Search, ChevronRight, Eye, Truck, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = React.useState('all');
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  const filteredOrders = orders.filter((order: any) => {
+  const filteredOrders = orders.filter((order: Order) => {
     const matchesTab = activeTab === 'all' || order.status?.toLowerCase() === activeTab.toLowerCase();
     const matchesSearch = order._id?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
@@ -74,7 +75,7 @@ export default function OrdersPage() {
 
       <div className="space-y-4">
         {filteredOrders.length > 0 ? (
-          filteredOrders.map((order: any) => (
+          filteredOrders.map((order: Order) => (
             <Card key={order._id} className="border-none shadow-md overflow-hidden group hover:shadow-lg transition-all duration-300">
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row md:items-center p-6 gap-6">
