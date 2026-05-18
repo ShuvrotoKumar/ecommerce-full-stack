@@ -23,20 +23,6 @@ app.post('/api/v1/orders/webhook', express.raw({ type: 'application/json' }), or
 // set security HTTP headers
 app.use(helmet());
 
-// Apply rate limiters in production
-if (process.env.NODE_ENV === 'production') {
-  app.use('/api/v1', apiLimiter);
-  app.use('/api/v1/auth', authLimiter);
-}
-
-
-// Stripe webhook must be before express.json() because it needs raw body
-const orderController = require('./controllers/order.controller');
-app.post('/api/v1/orders/webhook', express.raw({ type: 'application/json' }), orderController.stripeWebhook);
-
-// set security HTTP headers
-app.use(helmet());
-
 // Handle preflight requests for all routes
 app.use((req, res, next) => {
   const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', process.env.FRONTEND_URL];
@@ -69,7 +55,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // sanitize data
-app.use(mongoSanitize());
+if (process.env.NODE_ENV !== 'test') {
+  app.use(mongoSanitize());
+}
 
 // enable cors
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', process.env.FRONTEND_URL];
