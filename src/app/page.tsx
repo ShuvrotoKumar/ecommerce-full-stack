@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, ShoppingBag, ShieldCheck, Zap, Truck, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,10 +41,11 @@ export default function Home() {
         />
         
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&h=1080&fit=crop"
             alt="Hero Background"
-            className="w-full h-full object-cover opacity-20"
+            fill
+            className="object-cover opacity-20"
           />
         </div>
         <div className="container mx-auto px-4 relative z-10">
@@ -127,9 +129,10 @@ export default function Home() {
               <Link href={`/shop?category=${category.name.toLowerCase()}`}>
                 <Card className="overflow-hidden group cursor-pointer border-none shadow-md">
                   <div className="aspect-square relative overflow-hidden">
-                    <img
+                    <Image
                       src={category.image}
                       alt={category.name}
+                      fill
                       className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -173,17 +176,18 @@ export default function Home() {
             >
               <Card className="overflow-hidden border-none shadow-lg">
                 <div className="aspect-square relative overflow-hidden">
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.name}
+                    fill
                     className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 z-10">
                     <Button variant="secondary" size="icon" className="rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
                       <Heart className="h-5 w-5" />
                     </Button>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10">
                     <Button className="w-full shadow-xl">Add to Cart</Button>
                   </div>
                 </div>

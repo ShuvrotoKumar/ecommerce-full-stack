@@ -4,6 +4,7 @@ import { Order } from '@/types/order';
 import { CartItem } from '@/types/cart';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -347,8 +348,8 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 {items.map((item: CartItem) => (
                   <div key={item.productId || item._id} className="flex gap-4">
-                    <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">
-                      <img src={item.product?.images?.[0]?.url || item.image || ''} alt={item.product?.name || item.name} className="w-full h-full object-cover" />
+                    <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0 relative">
+                      <Image src={item.product?.images?.[0]?.url || item.image || '/placeholder.png'} alt={item.product?.name || item.name} fill className="object-cover" />
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className="text-sm font-bold truncate">{item.product?.name || item.name}</p>

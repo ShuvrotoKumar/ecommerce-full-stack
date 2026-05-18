@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { ShieldCheck, Truck, Users, Award, Zap, Heart } from 'lucide-react';
 
 export default function AboutPage() {
@@ -32,11 +33,12 @@ export default function AboutPage() {
 
       {/* Mission Section */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl rotate-3">
-          <img 
+        <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl rotate-3 relative">
+          <Image 
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&h=800&fit=crop" 
             alt="Our Team" 
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         </div>
         <div className="space-y-8">

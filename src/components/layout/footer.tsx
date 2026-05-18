@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Share2, Globe, MessageCircle, Video, Mail, Phone, MapPin } from 'lucide-react';
 
 const footerLinks = {
@@ -102,10 +103,18 @@ export function Footer() {
             © {new Date().getFullYear()} ShopSwift. All rights reserved.
           </p>
           <div className="flex items-center space-x-6">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4 opacity-50 grayscale hover:grayscale-0 transition-all" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6 opacity-50 grayscale hover:grayscale-0 transition-all" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 opacity-50 grayscale hover:grayscale-0 transition-all" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_logo%2C_revised_2016.svg" alt="Stripe" className="h-6 opacity-50 grayscale hover:grayscale-0 transition-all" />
+            <div className="relative h-4 w-12 opacity-50 grayscale hover:grayscale-0 transition-all">
+              <Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" fill className="object-contain" />
+            </div>
+            <div className="relative h-6 w-12 opacity-50 grayscale hover:grayscale-0 transition-all">
+              <Image src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" />
+            </div>
+            <div className="relative h-4 w-12 opacity-50 grayscale hover:grayscale-0 transition-all">
+              <Image src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" fill className="object-contain" />
+            </div>
+            <div className="relative h-6 w-12 opacity-50 grayscale hover:grayscale-0 transition-all">
+              <Image src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_logo%2C_revised_2016.svg" alt="Stripe" fill className="object-contain" />
+            </div>
           </div>
         </div>
       </div>

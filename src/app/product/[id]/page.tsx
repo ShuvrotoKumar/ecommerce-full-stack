@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { 
   Star, 
@@ -75,10 +76,11 @@ export default function ProductDetailsPage() {
             animate={{ opacity: 1 }}
             className="aspect-square bg-muted rounded-3xl overflow-hidden relative"
           >
-            <img 
-              src={product.images?.[selectedImage]?.url || product.images?.[selectedImage] || 'https://via.placeholder.com/800'} 
+            <Image 
+              src={product.images?.[selectedImage]?.url || product.images?.[selectedImage] || '/placeholder.png'} 
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              fill
+              className="object-cover transition-transform duration-500 hover:scale-105"
             />
             <Badge className="absolute top-6 left-6 px-4 py-1 bg-background/80 backdrop-blur-md text-foreground border-none">
               Free Shipping
@@ -89,11 +91,11 @@ export default function ProductDetailsPage() {
               <button
                 key={i}
                 onClick={() => setSelectedImage(i)}
-                className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${
+                className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all relative ${
                   selectedImage === i ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={img.url || img} alt={`View ${i}`} className="w-full h-full object-cover" />
+                <Image src={img.url || img} alt={`View ${i}`} fill className="object-cover" />
               </button>
             ))}
           </div>

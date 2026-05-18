@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CartItem } from '@/types/cart';
 import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, Truck, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,11 +57,12 @@ export default function CartPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="flex flex-col sm:flex-row gap-6 p-4 bg-card border rounded-2xl"
               >
-                <div className="w-full sm:w-32 h-32 shrink-0 bg-muted rounded-xl overflow-hidden">
-                  <img
-                    src={item.product?.images?.[0]?.url || item.image || ''}
+                <div className="w-full sm:w-32 h-32 shrink-0 bg-muted rounded-xl overflow-hidden relative">
+                  <Image
+                    src={item.product?.images?.[0]?.url || item.image || '/placeholder.png'}
                     alt={item.product?.name || item.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </div>
                 <div className="flex-grow flex flex-col justify-between py-1">
