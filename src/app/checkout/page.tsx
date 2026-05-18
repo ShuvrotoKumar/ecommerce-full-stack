@@ -1,5 +1,8 @@
 'use client';
 
+import { Order } from '@/types/order';
+import { CartItem } from '@/types/cart';
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -300,9 +303,9 @@ export default function CheckoutPage() {
                     </div>
                     <div className="p-6 border rounded-2xl space-y-4">
                       <h3 className="font-bold">Items to Ship</h3>
-                      {items.map((item: any) => (
-                        <div key={item.productId || item._id || item.id} className="flex justify-between text-sm">
-                          <span>{(item.product?.name || item.name)} x {item.quantity}</span>
+                      {items.map((item: CartItem) => (
+                        <div key={item.productId || item._id} className="flex justify-between text-sm">
+                          <span>{item.product?.name || item.name} x {item.quantity}</span>
                           <span className="font-medium">${((item.product?.price || item.price || 0) * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
@@ -342,10 +345,10 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                {items.map((item: any) => (
-                  <div key={item.productId || item._id || item.id} className="flex gap-4">
+                {items.map((item: CartItem) => (
+                  <div key={item.productId || item._id} className="flex gap-4">
                     <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">
-                      <img src={item.product?.images?.[0]?.url || item.product?.images?.[0] || item.image} alt={item.product?.name || item.name} className="w-full h-full object-cover" />
+                      <img src={item.product?.images?.[0]?.url || item.image || ''} alt={item.product?.name || item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className="text-sm font-bold truncate">{item.product?.name || item.name}</p>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { CartItem } from '@/types/cart';
 import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, Truck, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,37 +39,6 @@ export default function CartPage() {
     toast.success('Cart cleared');
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-24 text-center">
-        <div className="flex flex-col items-center max-w-md mx-auto space-y-6">
-          <div className="p-6 bg-muted rounded-full animate-pulse">
-            <ShoppingBag className="h-16 w-16 text-muted-foreground" />
-          </div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-24 text-center">
-        <div className="flex flex-col items-center max-w-md mx-auto space-y-6">
-          <div className="p-6 bg-muted rounded-full">
-            <ShoppingBag className="h-16 w-16 text-muted-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold">Your cart is empty</h1>
-          <p className="text-muted-foreground">
-            Looks like you haven&apos;t added anything to your cart yet.
-            Explore our shop to find the best deals!
-          </p>
-          <Button size="lg" className="rounded-full px-8" render={<Link href="/shop">Start Shopping</Link>} />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart ({totalQuantity} items)</h1>
@@ -77,7 +47,7 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-6">
           <AnimatePresence>
-            {items.map((item: any) => (
+            {items.map((item: CartItem) => (
               <motion.div
                 key={item.productId || item._id}
                 layout
@@ -88,7 +58,7 @@ export default function CartPage() {
               >
                 <div className="w-full sm:w-32 h-32 shrink-0 bg-muted rounded-xl overflow-hidden">
                   <img
-                    src={item.product?.images?.[0]?.url || item.image}
+                    src={item.product?.images?.[0]?.url || item.image || ''}
                     alt={item.product?.name || item.name}
                     className="w-full h-full object-cover"
                   />
