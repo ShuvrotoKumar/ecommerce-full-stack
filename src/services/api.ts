@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi, fetchBaseQuery, BaseQueryApi, FetchArgs } from '@reduxjs/toolkit/query/react';
 import { RootState } from '@/store';
 import { getCookie } from '@/lib/cookies';
 
@@ -18,7 +18,7 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+const baseQueryWithReauth = async (args: string | FetchArgs, api: BaseQueryApi, extraOptions: {}) => {
   let result = await baseQuery(args, api, extraOptions);
   
   // If token expired, try to refresh
