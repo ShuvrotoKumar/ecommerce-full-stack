@@ -7,7 +7,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="text-center space-y-6 max-w-3xl mx-auto py-12">
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter">
-          We're Redefining the <span className="text-primary">Shopping Experience</span>
+          We&apos;re Redefining the <span className="text-primary">Shopping Experience</span>
         </h1>
         <p className="text-xl text-muted-foreground leading-relaxed">
           ShopSwift was founded in 2026 with a simple mission: to make premium products 
@@ -42,7 +42,7 @@ export default function AboutPage() {
         <div className="space-y-8">
           <h2 className="text-4xl font-bold tracking-tight">Built by People who Care about Quality</h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            At ShopSwift, we don't just sell products; we curate experiences. Our team of 
+            At ShopSwift, we don&apos;t just sell products; we curate experiences. Our team of 
             experts travels the globe to find manufacturers who share our commitment to 
             sustainable materials and exceptional craftsmanship.
           </p>
