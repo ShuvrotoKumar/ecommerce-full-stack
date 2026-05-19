@@ -1,13 +1,9 @@
 const httpStatus = require('http-status');
+const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const orderService = require('../services/order.service');
 
-let stripe;
-try {
-  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-} catch (error) {
-  console.warn('Stripe not configured - payment functionality will be disabled');
-}
+const stripe = require('../config/stripe');
 
 const createOrder = catchAsync(async (req, res) => {
   const order = await orderService.createOrder(req.body, req.user);
@@ -42,10 +38,6 @@ const getAllOrders = catchAsync(async (req, res) => {
 const createPaymentIntent = catchAsync(async (req, res) => {
   const { amount } = req.body;
   
-  if (!stripe) {
-    throw new ApiError(httpStatus.SERVICE_UNAVAILABLE, 'Payment service is not configured');
-  }
-  
   const paymentIntent = await stripe.paymentIntents.create({
     amount: Math.round(amount * 100), // amount in cents
     currency: 'usd',
@@ -62,19 +54,11 @@ const createCheckoutSession = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
   }
   
-  if (!stripe) {
-    throw new ApiError(httpStatus.SERVICE_UNAVAILABLE, 'Payment service is not configured');
-  }
-  
   const session = await orderService.createCheckoutSession(order, req.user);
   res.send({ url: session.url });
 });
 
 const stripeWebhook = catchAsync(async (req, res) => {
-  if (!stripe) {
-    return res.status(503).send('Payment service is not configured');
-  }
-  
   const sig = req.headers['stripe-signature'];
   let event;
 
