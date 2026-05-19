@@ -1,3 +1,9 @@
+jest.mock('../src/config/stripe', () => ({
+  paymentIntents: {
+    create: jest.fn(),
+  },
+}));
+
 const stripe = require('../src/config/stripe');
 
 describe('Stripe Configuration', () => {
